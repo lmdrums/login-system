@@ -24,15 +24,15 @@ signup_image = CTkImage(light_image=get_pillow_image(c.SIGNUP_IMAGE_PATH),
 find_image = CTkImage(light_image=get_pillow_image(c.FIND_IMAGE_PATH),
                 dark_image=get_pillow_image(c.FIND_IMAGE_PATH))
 
-class DisablePasswordMask(Button):
+class DisablePasswordMask(CTkButton):
     def __init__(self, master, entry, **kwargs):
         tk_image = Image.open(c.PWORD_UNMASK_IMAGE_PATH)
         tk_image = tk_image.resize((22, 22))
         self.unmask = ImageTk.PhotoImage(tk_image)
-        super().__init__(master, image=self.unmask, **kwargs)
+        super().__init__(master, image=self.unmask, text="", width=22, height=22, **kwargs)
         self.entry = entry
-        self.bind("<Button-1>", lambda e: self.held_down())
-        self.bind("<ButtonRelease-1>", lambda e: self.button_up())
+        self.bind("<Button-1>", self.held_down)
+        self.bind("<ButtonRelease-1>", self.button_up)
         self.activate = False
 
     def held_down(self):
@@ -54,48 +54,52 @@ class App(CTk):
         
         if sys.platform.startswith("win"):
             self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
-        else:
-            pass
-        
-        self.frame = CTkFrame(self)
-        self.frame.grid(column=0, row=0, sticky="nsew")
-        self.frame.columnconfigure(0, weight=1)
 
         self.bg_pil = Image.open(h.get_resource_path(c.BACKGROUND))
 
-        self.bg_photo = CTkLabel(self.frame, text="")
-        self.bg_photo.grid(column=0, row=0, sticky="nsew", rowspan=200, columnspan=2)
+        self.bg_photo = CTkLabel(self, text="")
+        self.bg_photo.place(x=0, y=0)
 
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
+        self.columnconfigure(0, weight=100)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
+        self.columnconfigure(3, weight=100)
 
-        self.username_entry= CTkEntry(self.frame, placeholder_text="Enter username",
+        self.rowconfigure(0, weight=50)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, weight=1)
+        self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=50)
+
+        self.username_entry= CTkEntry(self, placeholder_text="Enter username",
                                       width=250)
-        self.username_entry.grid(column=0, row=100, pady=(0,120))
+        self.username_entry.grid(row=1, column=1)
 
-        self.password_entry = CTkEntry(self.frame, placeholder_text="Enter password",
+        self.password_entry = CTkEntry(self, placeholder_text="Enter password",
                                        width=250, show="●")
-        self.password_entry.grid(column=0, row=100, pady=(0,50))
+        self.password_entry.grid(row=2, column=1)
 
         self.password_unmask_padx = 580
-        self.password_unmask = DisablePasswordMask(self.frame, self.password_entry, bd=0, background="white")
+        self.password_unmask = DisablePasswordMask(self, self.password_entry, fg_color="white")
+        self.password_unmask.grid(row=2, column=2, sticky="w")
         
-        self.submit_button = CTkButton(self.frame, text="Sign In", image=signin_image,
+        self.submit_button = CTkButton(self, text="Sign In", image=signin_image,
                                        width=200, command=self.submit)
-        self.submit_button.grid(column=0, row=100, pady=(40,0))
+        self.submit_button.grid(column=1, row=3)
 
-        self.signup_button = CTkButton(self.frame, text="Sign Up", image=signup_image,
+        self.signup_button = CTkButton(self, text="Sign Up", image=signup_image,
                                        width=200, command=self.signup_function)
-        self.signup_button.grid(column=0, row=100, pady=(120,0))
+        self.signup_button.grid(column=1, row=4)
 
-        self.username_entry.bind("<Return>", lambda e: self.submit())
-        self.password_entry.bind("<Return>", lambda e: self.submit())
+        self.username_entry.bind("<Return>", self.submit)
+        self.password_entry.bind("<Return>", self.submit)
 
         self.resize_image()
         self.replace_padx()
 
     def replace_padx(self):
-        window_width = self.winfo_width()
+        """window_width = self.winfo_width()
 
         difference_width = 960 - window_width
 
@@ -104,7 +108,7 @@ class App(CTk):
             new_padx = 0
         self.password_unmask.grid(column=0, row=100, pady=(0,50), padx=(new_padx,0), sticky="w")
 
-        self.after(200, self.replace_padx)
+        self.after(200, self.replace_padx)"""
 
     def signup_function(self):
         signup = Signup()
