@@ -13,7 +13,7 @@
       "border_color": ["gray65", "gray28"]
     },
     "CTkButton": {
-      "corner_radius": 6,
+      "corner_radius": 0,
       "border_width": 0,
       "fg_color": ["#3a7ebf", "#1f538d"],
       "hover_color": ["#325882", "#14375e"],
@@ -27,15 +27,15 @@
       "text_color": ["gray14", "gray84"]
     },
     "CTkEntry": {
-      "corner_radius": 6,
-      "border_width": 2,
+      "corner_radius": 0,
+      "border_width": 1,
       "fg_color": ["#F9F9FA", "#343638"],
       "border_color": ["#979DA2", "#565B5E"],
       "text_color": ["gray14", "gray84"],
       "placeholder_text_color": ["gray52", "gray62"]
     },
     "CTkCheckBox": {
-      "corner_radius": 6,
+      "corner_radius": 0,
       "border_width": 3,
       "fg_color": ["#3a7ebf", "#1f538d"],
       "border_color": ["#3E454A", "#949A9F"],
@@ -142,7 +142,7 @@
         "weight": "normal"
       },
       "Windows": {
-        "family": "Roboto",
+        "family": "Segoe UI",
         "size": 13,
         "weight": "normal"
       },

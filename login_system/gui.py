@@ -1,11 +1,13 @@
 from customtkinter import (CTk, CTkToplevel, CTkLabel, CTkEntry, CTkButton,
-                           CTkOptionMenu, CTkImage, END, CTkFrame, set_appearance_mode,
-                           set_default_color_theme)
+                           CTkScrollableFrame, CTkImage, END, CTkFrame, 
+                           set_appearance_mode, set_default_color_theme)
 from PIL import Image, ImageTk
 from notifypy import Notify
+from time import strftime
 
 import sys
-from tkinter import Toplevel, messagebox, PhotoImage
+from tkinter import Toplevel, messagebox
+import webbrowser
 
 import login_system.helpers as h
 import login_system.constants as c
@@ -13,15 +15,18 @@ import login_system.constants as c
 set_appearance_mode("light")
 set_default_color_theme(c.DEFAULT_THEME)
 
+get_pillow_image = lambda relative_path: Image.open(h.get_resource_path(relative_path))
+
+signin_image = CTkImage(light_image=get_pillow_image(c.SIGNIN_IMAGE_PATH),
+                dark_image=get_pillow_image(c.SIGNIN_IMAGE_PATH))
+signup_image = CTkImage(light_image=get_pillow_image(c.SIGNUP_IMAGE_PATH),
+                dark_image=get_pillow_image(c.SIGNUP_IMAGE_PATH))
+find_image = CTkImage(light_image=get_pillow_image(c.FIND_IMAGE_PATH),
+                dark_image=get_pillow_image(c.FIND_IMAGE_PATH))
+
 class App(CTk):
     def __init__(self):
         super().__init__()
-        get_pillow_image = lambda relative_path: Image.open(h.get_resource_path(relative_path))
-        
-        self.signin_image = CTkImage(light_image=get_pillow_image(c.SIGNIN_IMAGE_PATH),
-                      dark_image=get_pillow_image(c.SIGNIN_IMAGE_PATH))
-        self.signup_image = CTkImage(light_image=get_pillow_image(c.SIGNUP_IMAGE_PATH),
-                      dark_image=get_pillow_image(c.SIGNUP_IMAGE_PATH))
 
         self.title(c.MAIN_TITLE)
         self.geometry(c.MAIN_GEOMETRY)
@@ -44,19 +49,19 @@ class App(CTk):
         self.columnconfigure(0, weight=1)
 
         self.username_entry= CTkEntry(self.frame, placeholder_text="Enter username",
-                                      width=250, corner_radius=0)
+                                      width=250)
         self.username_entry.grid(column=0, row=100, pady=(0,120))
 
         self.password_entry = CTkEntry(self.frame, placeholder_text="Enter password",
-                                       width=250, corner_radius=0, show="●")
+                                       width=250, show="●")
         self.password_entry.grid(column=0, row=100, pady=(0,50))
 
-        self.submit_button = CTkButton(self.frame, text="Sign In", image=self.signin_image,
-                                       width=200, command=self.submit, corner_radius=0)
+        self.submit_button = CTkButton(self.frame, text="Sign In", image=signin_image,
+                                       width=200, command=self.submit)
         self.submit_button.grid(column=0, row=100, pady=(40,0))
 
-        self.signup_button = CTkButton(self.frame, text="Sign Up", image=self.signup_image,
-                                       width=200, command=self.signup_function, corner_radius=0)
+        self.signup_button = CTkButton(self.frame, text="Sign Up", image=signup_image,
+                                       width=200, command=self.signup_function)
         self.signup_button.grid(column=0, row=100, pady=(120,0))
 
         self.username_entry.bind("<Return>", lambda e: self.submit())
@@ -75,11 +80,9 @@ class App(CTk):
         if username_entered:
             if password_entered:
                 if h.check_details(username_entered, password_entered):
-                    self.withdraw()
-                    self.quit()
+                    self.destroy()
                     account = Account(username_entered)
                     account.mainloop()
-                    self.destroy()
                 else:
                     messagebox.showerror(title="Error", message="Username or password incorrect.")
             else:
@@ -112,15 +115,11 @@ class App(CTk):
 
         self.bg_photo.configure(image=resized_img)
 
-        self.after(75, self.resize_image)
+        self.after_loop = self.after(75, self.resize_image)
 
 class Signup(Toplevel):
     def __init__(self):
         super().__init__()
-
-        get_pillow_image = lambda relative_path: Image.open(h.get_resource_path(relative_path))
-        self.signup_image = CTkImage(light_image=get_pillow_image(c.SIGNUP_IMAGE_PATH),
-                      dark_image=get_pillow_image(c.SIGNUP_IMAGE_PATH))
         
         self.title(c.SIGNUP_TITLE)
         self.geometry(c.SIGNUP_GEOMETRY)
@@ -135,15 +134,15 @@ class Signup(Toplevel):
         self.frame.columnconfigure(0, weight=1)
 
         self.username_entry= CTkEntry(self.frame, placeholder_text="Enter username",
-                                      width=250, corner_radius=0)
+                                      width=250)
         self.username_entry.grid(column=0, row=100, pady=(0,70))
 
         self.password_entry = CTkEntry(self.frame, placeholder_text="Enter password",
-                                       width=250, corner_radius=0, show="●")
+                                       width=250, show="●")
         self.password_entry.grid(column=0, row=100, pady=(0,0))
 
-        self.submit_button = CTkButton(self.frame, text="Create Account", image=self.signup_image,
-                                       width=200, command=self.create_login, corner_radius=0)
+        self.submit_button = CTkButton(self.frame, text="Create Account", image=signup_image,
+                                       width=200, command=self.create_login)
         self.submit_button.grid(column=0, row=100, pady=(80,0))
 
         self.username_entry.bind("<Return>", lambda e: self.create_login())
@@ -176,7 +175,7 @@ class Signup(Toplevel):
             self.lift()
             self.username_entry.focus()
             return
-        
+
 class Account(CTk):
     def __init__(self, username):
         super().__init__()
@@ -190,7 +189,7 @@ class Account(CTk):
         else:
             pass
 
-        self.frame = CTkFrame(self)
+        self.frame = CTkScrollableFrame(self)
         self.frame.pack(fill="both", expand=True, pady=20, padx=20)
         self.frame.columnconfigure(0, weight=1)
 
@@ -202,10 +201,30 @@ class Account(CTk):
 
         welcome.send()
 
-        self.welcome_label = CTkLabel(self.frame, 
-                                      text=f"Welcome to your account, {username}.", )
+        self.welcome_label = CTkLabel(self.frame, font=("", 20, "bold"),
+                                      text=f"Welcome to your account, {username}.")
         self.welcome_label.grid(row=0, column=0, padx=10, pady=(10,0), sticky="w")
-        
+
+        self.web_search_entry = CTkEntry(self.frame, placeholder_text="Search web",
+                                       width=400)
+        self.web_search_entry.grid(row=1, column=0, padx=10, pady=(10,0), sticky="w")
+        self.web_search_entry.bind("<Return>", lambda e: self.web_search())
+
+        self.web_search_button = CTkButton(self.frame, text="", image=find_image,
+                                           command=self.web_search, width=60)
+        self.web_search_button.grid(row=1, column=0, padx=400, pady=(10,0), sticky="w")
+
+    def web_search(self):
+        arg = self.web_search_entry.get()
+        if arg:
+            links = ["https://", "http://", ".com", ".org", ".uk", "www."]
+            if any(link in arg for link in links):
+                webbrowser.open(arg)
+            else:
+                webbrowser.open(f"https://www.google.com/search?q={arg}")
+        else:
+            messagebox.showerror(title="Invalid Input", message="Please enter a valid query.")
+
 def main():
     app = App()
     app.mainloop()

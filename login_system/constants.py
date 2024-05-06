@@ -30,6 +30,7 @@ NOTIFICATION_SOUND_PATH = os.path.join(FILES_FOLDER_PATH, "notification.wav")
 # Images
 SIGNIN_IMAGE_PATH = os.path.join(IMAGES_FOLDER_PATH, "signin.png")
 SIGNUP_IMAGE_PATH = os.path.join(IMAGES_FOLDER_PATH, "signup.png")
+FIND_IMAGE_PATH = os.path.join(IMAGES_FOLDER_PATH, "find.png")
 
 # Misc
 DEFAULT_THEME = os.path.join(ASSETS_FOLDER_PATH, "theme.json")
