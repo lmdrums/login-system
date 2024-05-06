@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 from notifypy import Notify
 
 import sys
-from tkinter import Toplevel, messagebox, Menu
+from tkinter import Toplevel, messagebox, Menu, Button, PhotoImage
 import webbrowser
 
 import login_system.helpers as h
@@ -24,6 +24,27 @@ signup_image = CTkImage(light_image=get_pillow_image(c.SIGNUP_IMAGE_PATH),
 find_image = CTkImage(light_image=get_pillow_image(c.FIND_IMAGE_PATH),
                 dark_image=get_pillow_image(c.FIND_IMAGE_PATH))
 
+class DisablePasswordMask(Button):
+    def __init__(self, master, entry, **kwargs):
+        tk_image = Image.open(c.PWORD_UNMASK_IMAGE_PATH)
+        tk_image = tk_image.resize((22, 22))
+        self.unmask = ImageTk.PhotoImage(tk_image)
+        super().__init__(master, image=self.unmask, **kwargs)
+        self.entry = entry
+        self.bind("<Button-1>", lambda e: self.held_down())
+        self.bind("<ButtonRelease-1>", lambda e: self.button_up())
+        self.activate = False
+
+    def held_down(self):
+        self.configure(relief="sunken")
+        self.entry.configure(show="")
+        self.activate = True
+
+    def button_up(self):
+        self.configure(relief="raised")
+        self.entry.configure(show="●")
+        self.activate = True
+
 class App(CTk):
     def __init__(self):
         super().__init__()
@@ -40,10 +61,10 @@ class App(CTk):
         self.frame.grid(column=0, row=0, sticky="nsew")
         self.frame.columnconfigure(0, weight=1)
 
-        self.bg_pil = Image.open(c.BACKGROUND)
+        self.bg_pil = Image.open(h.get_resource_path(c.BACKGROUND))
 
         self.bg_photo = CTkLabel(self.frame, text="")
-        self.bg_photo.grid(column=0, row=0, sticky="nsew", rowspan=200)
+        self.bg_photo.grid(column=0, row=0, sticky="nsew", rowspan=200, columnspan=2)
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
@@ -56,6 +77,9 @@ class App(CTk):
                                        width=250, show="●")
         self.password_entry.grid(column=0, row=100, pady=(0,50))
 
+        self.password_unmask_padx = 580
+        self.password_unmask = DisablePasswordMask(self.frame, self.password_entry, bd=0, background="white")
+        
         self.submit_button = CTkButton(self.frame, text="Sign In", image=signin_image,
                                        width=200, command=self.submit)
         self.submit_button.grid(column=0, row=100, pady=(40,0))
@@ -68,6 +92,19 @@ class App(CTk):
         self.password_entry.bind("<Return>", lambda e: self.submit())
 
         self.resize_image()
+        self.replace_padx()
+
+    def replace_padx(self):
+        window_width = self.winfo_width()
+
+        difference_width = 960 - window_width
+
+        new_padx = self.password_unmask_padx - difference_width
+        if new_padx < 0:
+            new_padx = 0
+        self.password_unmask.grid(column=0, row=100, pady=(0,50), padx=(new_padx,0), sticky="w")
+
+        self.after(200, self.replace_padx)
 
     def signup_function(self):
         signup = Signup()
