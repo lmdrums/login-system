@@ -1,5 +1,4 @@
 from configparser import RawConfigParser
-import login_system.constants as c
 
 def make_default_settings_file(settings: 
                                dict[str, dict[str, str | int | float | bool]], 
