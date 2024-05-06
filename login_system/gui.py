@@ -1,18 +1,16 @@
-from customtkinter import (CTk, CTkToplevel, CTkLabel, CTkEntry, CTkButton,
+from customtkinter import (CTk, CTkLabel, CTkEntry, CTkButton,
                            CTkScrollableFrame, CTkImage, END, CTkFrame, 
                            set_appearance_mode, set_default_color_theme,
-                           filedialog, CTkFont)
+                           filedialog)
 from PIL import Image, ImageTk
 from notifypy import Notify
-from time import strftime
 
 import sys
-from tkinter import Toplevel, messagebox, Menu, PhotoImage
+from tkinter import Toplevel, messagebox, Menu
 import webbrowser
 
 import login_system.helpers as h
 import login_system.constants as c
-import login_system.settings as s
 
 set_appearance_mode("light")
 set_default_color_theme(c.DEFAULT_THEME)
