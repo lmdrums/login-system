@@ -4,7 +4,8 @@ from customtkinter import (CTk, CTkToplevel, CTkLabel, CTkEntry, CTkButton,
 from PIL import Image, ImageTk
 from notifypy import Notify
 
-from tkinter import Toplevel, messagebox
+import sys
+from tkinter import Toplevel, messagebox, PhotoImage
 
 import login_system.helpers as h
 import login_system.constants as c
@@ -24,8 +25,12 @@ class App(CTk):
 
         self.title(c.MAIN_TITLE)
         self.geometry(c.MAIN_GEOMETRY)
-        self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
-
+        
+        if sys.platform.startswith("win"):
+            self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
+        else:
+            pass
+        
         self.frame = CTkFrame(self)
         self.frame.grid(column=0, row=0, sticky="nsew")
         self.frame.columnconfigure(0, weight=1)
@@ -112,14 +117,19 @@ class App(CTk):
 class Signup(Toplevel):
     def __init__(self):
         super().__init__()
+
         get_pillow_image = lambda relative_path: Image.open(h.get_resource_path(relative_path))
         self.signup_image = CTkImage(light_image=get_pillow_image(c.SIGNUP_IMAGE_PATH),
                       dark_image=get_pillow_image(c.SIGNUP_IMAGE_PATH))
         
         self.title(c.SIGNUP_TITLE)
         self.geometry(c.SIGNUP_GEOMETRY)
-        self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
 
+        if sys.platform.startswith("win"):
+            self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
+        else:
+            pass
+        
         self.frame = CTkFrame(self, fg_color="#000e20", corner_radius=0)
         self.frame.pack(fill="both", expand=True)
         self.frame.columnconfigure(0, weight=1)
@@ -174,7 +184,11 @@ class Account(CTk):
 
         self.title(self.username)
         self.geometry(c.ACCOUNT_GEOMETRY)
-        self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
+        
+        if sys.platform.startswith("win"):
+            self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
+        else:
+            pass
 
         self.frame = CTkFrame(self)
         self.frame.pack(fill="both", expand=True, pady=20, padx=20)
