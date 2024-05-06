@@ -6,7 +6,7 @@ from notifypy import Notify
 from time import strftime
 
 import sys
-from tkinter import Toplevel, messagebox
+from tkinter import Toplevel, messagebox, Menu, PhotoImage
 import webbrowser
 
 import login_system.helpers as h
@@ -188,6 +188,13 @@ class Account(CTk):
             self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
         else:
             pass
+        
+        self.menu = Menu(self)
+        self.config(menu=self.menu)
+        self.filemenu = Menu(self.menu, tearoff="off")
+
+        self.menu.add_cascade(label="File", menu=self.filemenu)
+        self.filemenu.add_command(label="⚙ Preferences", command=self.preferences, accelerator="Ctrl+Shift+P    ", hidemargin=True)
 
         self.frame = CTkScrollableFrame(self)
         self.frame.pack(fill="both", expand=True, pady=20, padx=20)
@@ -224,6 +231,9 @@ class Account(CTk):
                 webbrowser.open(f"https://www.google.com/search?q={arg}")
         else:
             messagebox.showerror(title="Invalid Input", message="Please enter a valid query.")
+    
+    def preferences(self):
+        pass
 
 def main():
     app = App()
