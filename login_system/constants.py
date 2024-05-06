@@ -1,6 +1,16 @@
 import os
 from dotenv import load_dotenv
 
+# Settings
+GENERAL_SETTINGS_SECTION = "GENERAL"
+ACCOUNT_DIRECTORY_SETTING_LOCATOR = (GENERAL_SETTINGS_SECTION, "account_directory")
+
+DEFAULT_SETTINGS = {
+    GENERAL_SETTINGS_SECTION: {
+        ACCOUNT_DIRECTORY_SETTING_LOCATOR[1]: ""
+    }
+}
+
 # Directories
 IMAGES_FOLDER_PATH = os.path.join("login_system", "images")
 FILES_FOLDER_PATH = os.path.join("login_system", "files")
@@ -16,16 +26,19 @@ BACKGROUND = os.path.join(IMAGES_FOLDER_PATH, "background.png")
 SIGNUP_TITLE = "Signup"
 SIGNUP_GEOMETRY = "300x200+580+370"
 
-# Encryption key
-ENCRYPTION_KEY_PATH = os.path.join(FILES_FOLDER_PATH, ".env")
-LOGIN_DATA_PATH = os.path.join(FILES_FOLDER_PATH, ".txt")
-load_dotenv(ENCRYPTION_KEY_PATH)
-ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
+# Preferences window
+PREFERENCES_GEOMETRY = "960x540+580+370"
 
 # Account window
 ACCOUNT_GEOMETRY = "960x540+480+270"
 NOTIFICATION_ICON = os.path.join(IMAGES_FOLDER_PATH, "iconpng.png")
 NOTIFICATION_SOUND_PATH = os.path.join(FILES_FOLDER_PATH, "notification.wav")
+
+# Encryption key
+ENCRYPTION_KEY_PATH = os.path.join(FILES_FOLDER_PATH, ".env")
+LOGIN_DATA_PATH = os.path.join(FILES_FOLDER_PATH, ".txt")
+load_dotenv(ENCRYPTION_KEY_PATH)
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
 
 # Images
 SIGNIN_IMAGE_PATH = os.path.join(IMAGES_FOLDER_PATH, "signin.png")

@@ -1,6 +1,7 @@
 from customtkinter import (CTk, CTkToplevel, CTkLabel, CTkEntry, CTkButton,
                            CTkScrollableFrame, CTkImage, END, CTkFrame, 
-                           set_appearance_mode, set_default_color_theme)
+                           set_appearance_mode, set_default_color_theme,
+                           filedialog, CTkFont)
 from PIL import Image, ImageTk
 from notifypy import Notify
 from time import strftime
@@ -11,6 +12,7 @@ import webbrowser
 
 import login_system.helpers as h
 import login_system.constants as c
+import login_system.settings as s
 
 set_appearance_mode("light")
 set_default_color_theme(c.DEFAULT_THEME)
@@ -160,7 +162,12 @@ class Signup(Toplevel):
                     self.lift()
                     self.username_entry.focus()
                     return
-                h.encrypt_signup_details(username_entered, password_entered)
+                
+                dir = self.choose_dir()
+
+                h.encrypt_signup_details(username_entered, password_entered, dir)
+                h.create_necessary_files(username_entered, dir)
+
                 messagebox.showinfo(title="Success", message="Account successfully created.")
                 self.destroy()
             else:
@@ -175,12 +182,16 @@ class Signup(Toplevel):
             self.lift()
             self.username_entry.focus()
             return
+    
+    def choose_dir(self) -> str:
+        file = filedialog.askdirectory(title="Choose a folder to store account files")
+        return file
 
 class Account(CTk):
     def __init__(self, username):
         super().__init__()
-        self.username = username
 
+        self.username = username
         self.title(self.username)
         self.geometry(c.ACCOUNT_GEOMETRY)
         
@@ -198,7 +209,6 @@ class Account(CTk):
 
         self.frame = CTkScrollableFrame(self)
         self.frame.pack(fill="both", expand=True, pady=20, padx=20)
-        self.frame.columnconfigure(0, weight=1)
 
         welcome = Notify()
         welcome.title = "Welcome!"
@@ -208,7 +218,7 @@ class Account(CTk):
 
         welcome.send()
 
-        self.welcome_label = CTkLabel(self.frame, font=("", 20, "bold"),
+        self.welcome_label = CTkLabel(self.frame, font=("Segoe UI", 20, "bold"),
                                       text=f"Welcome to your account, {username}.")
         self.welcome_label.grid(row=0, column=0, padx=10, pady=(10,0), sticky="w")
 
@@ -220,6 +230,7 @@ class Account(CTk):
         self.web_search_button = CTkButton(self.frame, text="", image=find_image,
                                            command=self.web_search, width=60)
         self.web_search_button.grid(row=1, column=0, padx=400, pady=(10,0), sticky="w")
+        self.bind_all("<Control-Shift-KeyPress-P>", lambda e: self.preferences())
 
     def web_search(self):
         arg = self.web_search_entry.get()
@@ -233,7 +244,51 @@ class Account(CTk):
             messagebox.showerror(title="Invalid Input", message="Please enter a valid query.")
     
     def preferences(self):
-        pass
+        preferences_window = Preferences(self.username)
+        preferences_window.mainloop()
+
+class Preferences(Toplevel):
+    def __init__(self, username: str):
+        super().__init__()
+        self.username = username
+        self.focus()
+        self.title(f"Preferences - {username}")
+        self.geometry(c.PREFERENCES_GEOMETRY)
+        if sys.platform.startswith("win"):
+            self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
+        else:
+            pass
+        
+        self.frame = CTkScrollableFrame(self)
+        self.frame.pack(fill="both", expand=True, pady=10, padx=10)
+
+        self.general_header = CTkLabel(self.frame, text="General", 
+                                       font=("Segoe UI", 15, "bold"))
+        self.general_header.grid(column=0, row=0, padx=10, pady=(10,0), sticky="w")
+
+        self.account_directory_label = CTkLabel(self.frame, text="Account Directory")
+        self.account_directory_label.grid(column=0, row=1, padx=10, pady=(10,0), sticky="w")
+        self.account_directory_entry = CTkEntry(self.frame, width=500,
+                                      placeholder_text="Account directory path (C:/...)")
+        self.account_directory_entry.grid(column=1, row=1, pady=(10,0))
+        self.account_dir_change = CTkButton(self.frame, text="Change  ",
+                                        width=70, command=self.change_account_dir)
+        self.account_dir_change.grid(column=2, row=1, pady=(10,0))
+
+        self.load_settings()
+
+    def change_account_dir(self):
+        self.focus()
+        file = filedialog.askdirectory(title="Choose a new folder to store account files")
+        self.account_directory_entry.delete(0, END)
+        self.account_directory_entry.insert(END, file)
+        self.focus()
+
+    def load_settings(self):
+        self.focus()
+        self.account_directory_entry.delete(0, END)
+        self.account_directory_entry.insert(END, h.get_user_dir(self.username))
+        self.focus()
 
 def main():
     app = App()
