@@ -96,19 +96,6 @@ class App(CTk):
         self.password_entry.bind("<Return>", self.submit)
 
         self.resize_image()
-        self.replace_padx()
-
-    def replace_padx(self):
-        """window_width = self.winfo_width()
-
-        difference_width = 960 - window_width
-
-        new_padx = self.password_unmask_padx - difference_width
-        if new_padx < 0:
-            new_padx = 0
-        self.password_unmask.grid(column=0, row=100, pady=(0,50), padx=(new_padx,0), sticky="w")
-
-        self.after(200, self.replace_padx)"""
 
     def signup_function(self):
         signup = Signup()
