@@ -314,9 +314,11 @@ class Preferences(Toplevel):
 
     def change_account_dir(self):
         self.focus()
+        current_dir = h.get_user_dir(self.username)
         file = filedialog.askdirectory(title="Choose a new folder to store account files")
         self.account_directory_entry.delete(0, END)
         self.account_directory_entry.insert(END, file)
+        h.move_files(self.username, current_dir, file)
         self.focus()
 
     def load_settings(self):

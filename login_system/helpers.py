@@ -1,7 +1,7 @@
 from cryptography.fernet import Fernet
 import login_system.constants as c
 import login_system.settings as s
-import os, sys
+import os, sys, shutil
 from dotenv import set_key
 
 def get_resource_path(relative_path: str="") -> str:
@@ -90,3 +90,23 @@ def create_necessary_files(username: str, directory: str) -> None:
     s.make_default_settings_file(c.DEFAULT_SETTINGS, f"{directory}/{username}.ini")
     s.edit_setting(*c.ACCOUNT_DIRECTORY_SETTING_LOCATOR, directory, f"{directory}/{username}.ini")
     open(f"{directory}/{username}.txt", "w")
+
+def move_files(username: str, src: str, dst: str) -> None:
+    fernet = Fernet(c.ENCRYPTION_KEY)
+    shutil.move(f"{src}/{username}.ini", f"{dst}/{username}.ini")
+    shutil.move(f"{src}/{username}.txt", f"{dst}/{username}.txt")
+
+    encrypted_dir = fernet.encrypt(dst.encode())
+    with open(get_resource_path(c.LOGIN_DATA_PATH), "rb") as f:
+        lines = [line.decode().split(",") for line in f.readlines()]
+
+    for i, line in enumerate(lines, start=1):
+        docusername = fernet.decrypt(line[0].encode()).decode().strip()
+
+        if username == docusername:
+            line[2] = encrypted_dir.decode()
+            lines[i-1] = ",".join(line) + "\n"
+            break
+
+    with open(get_resource_path(c.LOGIN_DATA_PATH), "wb") as f:
+        f.writelines(bytes(line, "utf-8") for line in lines)
