@@ -84,6 +84,10 @@ def get_user_dir(username: str) -> str:
         
         if docusername == username:
             return docdir
+
+def get_user_settings_file(directory: str, username: str) -> str:
+    settings_file = f"{directory}/{username}.ini"
+    return settings_file
         
 def create_necessary_files(username: str, directory: str) -> None:
     """Creates necessary files in the user's dir"""

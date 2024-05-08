@@ -11,6 +11,7 @@ import webbrowser
 
 import login_system.helpers as h
 import login_system.constants as c
+import login_system.settings as s
 
 set_appearance_mode("light")
 set_default_color_theme(c.DEFAULT_THEME)
@@ -80,8 +81,8 @@ class App(CTk):
                                        width=250, show="●")
         self.password_entry.grid(row=2, column=1, sticky="ew")
 
-        self.password_unmask = DisablePasswordMask(self, self.password_entry, bd=0, background="white")
-        self.password_unmask.grid(row=2, column=2, sticky="w")
+        self.password_unmask = DisablePasswordMask(self, self.password_entry, bd=0, background="#F9F9FA")
+        self.password_unmask.grid(row=2, column=1, sticky="e")
         
         self.submit_button = CTkButton(self, text="Sign In", image=signin_image,
                                        width=200, command=self.submit)
@@ -190,8 +191,11 @@ class Signup(Toplevel):
                 
                 dir = self.choose_dir()
 
-                h.encrypt_signup_details(username_entered, password_entered, dir)
-                h.create_necessary_files(username_entered, dir)
+                try:
+                    h.encrypt_signup_details(username_entered, password_entered, dir)
+                    h.create_necessary_files(username_entered, dir)
+                except PermissionError or FileExistsError or FileNotFoundError:
+                    return
 
                 messagebox.showinfo(title="Success", message="Account successfully created.")
                 self.destroy()
@@ -215,8 +219,9 @@ class Signup(Toplevel):
 class Account(CTk):
     def __init__(self, username):
         super().__init__()
-
         self.username = username
+        self.user_directory = h.get_user_dir(self.username)
+        self.settings_file_dir = h.get_user_settings_file(self.user_directory, self.username)
         self.title(self.username)
         self.geometry(c.ACCOUNT_GEOMETRY)
         
@@ -230,7 +235,7 @@ class Account(CTk):
         self.filemenu = Menu(self.menu, tearoff="off")
 
         self.menu.add_cascade(label="File", menu=self.filemenu)
-        self.filemenu.add_command(label="⚙ Preferences", command=self.preferences, accelerator="Ctrl+Shift+P    ", hidemargin=True)
+        self.filemenu.add_command(label="⚙ Preferences    ", command=self.preferences, accelerator="Ctrl+Shift+P    ", hidemargin=True)
 
         self.frame = CTkScrollableFrame(self)
         self.frame.pack(fill="both", expand=True, pady=20, padx=20)

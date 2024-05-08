@@ -24,7 +24,7 @@ BACKGROUND = os.path.join(IMAGES_FOLDER_PATH, "background.png")
 
 # Signup window
 SIGNUP_TITLE = "Signup"
-SIGNUP_GEOMETRY = "300x200+580+370"
+SIGNUP_GEOMETRY = "300x150+490+310"
 
 # Preferences window
 PREFERENCES_GEOMETRY = "960x540+580+370"

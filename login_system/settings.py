@@ -11,7 +11,8 @@ def make_default_settings_file(settings:
     with open(directory, "w", encoding="utf-8") as file:
         config.write(file)
 
-def edit_setting(section: str, name: str, value: str | int | float | bool, directory: str) -> None:
+def edit_setting(section: str, name: str, value: str | int | float | bool, 
+                 directory: str) -> None:
     """Edits a setting in the given configuration file."""
     config = RawConfigParser()
     config.read(directory)
@@ -21,7 +22,10 @@ def edit_setting(section: str, name: str, value: str | int | float | bool, direc
     with open(directory, "w", encoding="utf-8") as file:
         config.write(file)
 
-def get_setting(directory: str, section: str, name: str, integer: bool=False, floatp: bool=False, boolean: bool=False) -> str | int | float | bool:
+def get_setting(directory: str, section: str, 
+                name: str, integer: bool=False, 
+                floatp: bool=False, boolean: 
+                bool=False) -> str | int | float | bool:
     """Gets a certain setting from file"""
     config = RawConfigParser()
     config.read(directory)
