@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 from notifypy import Notify
 
 import sys
-from tkinter import Toplevel, messagebox, Menu, Button, PhotoImage
+from tkinter import Toplevel, messagebox, Menu, Button
 import webbrowser
 
 import login_system.helpers as h
@@ -24,15 +24,15 @@ signup_image = CTkImage(light_image=get_pillow_image(c.SIGNUP_IMAGE_PATH),
 find_image = CTkImage(light_image=get_pillow_image(c.FIND_IMAGE_PATH),
                 dark_image=get_pillow_image(c.FIND_IMAGE_PATH))
 
-class DisablePasswordMask(CTkButton):
+class DisablePasswordMask(Button):
     def __init__(self, master, entry, **kwargs):
         tk_image = Image.open(c.PWORD_UNMASK_IMAGE_PATH)
-        tk_image = tk_image.resize((22, 22))
+        tk_image = tk_image.resize((24, 24))
         self.unmask = ImageTk.PhotoImage(tk_image)
-        super().__init__(master, image=self.unmask, text="", width=22, height=22, **kwargs)
+        super().__init__(master, image=self.unmask, **kwargs)
         self.entry = entry
-        self.bind("<Button-1>", self.held_down)
-        self.bind("<ButtonRelease-1>", self.button_up)
+        self.bind("<Button-1>", lambda _: self.held_down())
+        self.bind("<ButtonRelease-1>", lambda _: self.button_up())
         self.activate = False
 
     def held_down(self):
@@ -43,7 +43,7 @@ class DisablePasswordMask(CTkButton):
     def button_up(self):
         self.configure(relief="raised")
         self.entry.configure(show="●")
-        self.activate = True
+        self.activate = False
 
 class App(CTk):
     def __init__(self):
@@ -62,7 +62,7 @@ class App(CTk):
 
         self.columnconfigure(0, weight=100)
         self.columnconfigure(1, weight=1)
-        self.columnconfigure(2, weight=1)
+        self.columnconfigure(2, weight=10)
         self.columnconfigure(3, weight=100)
 
         self.rowconfigure(0, weight=50)
@@ -74,26 +74,25 @@ class App(CTk):
 
         self.username_entry= CTkEntry(self, placeholder_text="Enter username",
                                       width=250)
-        self.username_entry.grid(row=1, column=1)
+        self.username_entry.grid(row=1, column=1, sticky="ew")
 
         self.password_entry = CTkEntry(self, placeholder_text="Enter password",
                                        width=250, show="●")
-        self.password_entry.grid(row=2, column=1)
+        self.password_entry.grid(row=2, column=1, sticky="ew")
 
-        self.password_unmask_padx = 580
-        self.password_unmask = DisablePasswordMask(self, self.password_entry, fg_color="white")
+        self.password_unmask = DisablePasswordMask(self, self.password_entry, bd=0, background="white")
         self.password_unmask.grid(row=2, column=2, sticky="w")
         
         self.submit_button = CTkButton(self, text="Sign In", image=signin_image,
                                        width=200, command=self.submit)
-        self.submit_button.grid(column=1, row=3)
+        self.submit_button.grid(column=1, row=3, pady=(10,0))
 
         self.signup_button = CTkButton(self, text="Sign Up", image=signup_image,
                                        width=200, command=self.signup_function)
         self.signup_button.grid(column=1, row=4)
 
-        self.username_entry.bind("<Return>", self.submit)
-        self.password_entry.bind("<Return>", self.submit)
+        self.username_entry.bind("<Return>", lambda _: self.submit())
+        self.password_entry.bind("<Return>", lambda _: self.submit())
 
         self.resize_image()
 
