@@ -113,4 +113,4 @@ def move_files(username: str, src: str, dst: str) -> None:
             break
 
     with open(get_resource_path(c.LOGIN_DATA_PATH), "wb") as f:
-        f.writelines(bytes(line, "utf-8") for line in lines)
+        f.writelines(bytes(str(line), "utf-8") for line in lines)
