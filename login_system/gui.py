@@ -1,7 +1,8 @@
 from customtkinter import (CTk, CTkLabel, CTkEntry, CTkButton,
-                           CTkScrollableFrame, CTkImage, END, CTkFrame, 
+                           CTkScrollableFrame, CTkImage, CTkFrame,
+                           CTkSlider, CTkCheckBox, StringVar,
                            set_appearance_mode, set_default_color_theme,
-                           filedialog)
+                           filedialog, END)
 from PIL import Image, ImageTk
 from notifypy import Notify
 
@@ -148,14 +149,11 @@ class App(CTk):
 class Signup(Toplevel):
     def __init__(self):
         super().__init__()
-        
         self.title(c.SIGNUP_TITLE)
         self.geometry(c.SIGNUP_GEOMETRY)
 
         if sys.platform.startswith("win"):
             self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
-        else:
-            pass
         
         self.frame = CTkFrame(self, fg_color="#000e20", corner_radius=0)
         self.frame.pack(fill="both", expand=True)
@@ -164,6 +162,7 @@ class Signup(Toplevel):
         self.username_entry= CTkEntry(self.frame, placeholder_text="Enter username",
                                       width=250)
         self.username_entry.grid(column=0, row=100, pady=(0,70))
+        self.username_entry.focus()
 
         self.password_entry = CTkEntry(self.frame, placeholder_text="Enter password",
                                        width=250, show="●")
@@ -173,8 +172,8 @@ class Signup(Toplevel):
                                        width=200, command=self.create_login)
         self.submit_button.grid(column=0, row=100, pady=(80,0))
 
-        self.username_entry.bind("<Return>", lambda e: self.create_login())
-        self.password_entry.bind("<Return>", lambda e: self.create_login())
+        self.username_entry.bind("<Return>", lambda _: self.create_login())
+        self.password_entry.bind("<Return>", lambda _: self.create_login())
     
     def create_login(self):
         username_entered = self.username_entry.get()
@@ -190,7 +189,9 @@ class Signup(Toplevel):
                     return
                 
                 dir = self.choose_dir()
-
+                if dir is None:
+                    return
+                
                 try:
                     h.encrypt_signup_details(username_entered, password_entered, dir)
                     h.create_necessary_files(username_entered, dir)
@@ -214,7 +215,10 @@ class Signup(Toplevel):
     
     def choose_dir(self) -> str:
         file = filedialog.askdirectory(title="Choose a folder to store account files")
-        return file
+        if file:
+            return file
+        else:
+            return
 
 class Account(CTk):
     def __init__(self, username):
@@ -227,8 +231,6 @@ class Account(CTk):
         
         if sys.platform.startswith("win"):
             self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
-        else:
-            pass
         
         self.menu = Menu(self)
         self.config(menu=self.menu)
@@ -255,13 +257,68 @@ class Account(CTk):
         self.web_search_entry = CTkEntry(self.frame, placeholder_text="Search web",
                                        width=400)
         self.web_search_entry.grid(row=1, column=0, padx=10, pady=(10,0), sticky="w")
-        self.web_search_entry.bind("<Return>", lambda e: self.web_search())
+        self.web_search_entry.bind("<Return>", lambda _: self.web_search())
 
         self.web_search_button = CTkButton(self.frame, text="", image=find_image,
                                            command=self.web_search, width=60)
-        self.web_search_button.grid(row=1, column=0, padx=400, pady=(10,0), sticky="w")
-        self.bind_all("<Control-Shift-KeyPress-P>", lambda e: self.preferences())
+        self.web_search_button.grid(row=1, column=0, padx=(400,0), pady=(10,0), sticky="w")
 
+        self.password_generator_label = CTkLabel(self.frame, text="Password Generator",
+                                                 font=("Segoe UI", 15, "bold"))
+        self.password_generator_label.grid(row=2, column=0, padx=10, pady=(10,0), sticky="w")
+
+        self.password_generator_entry = CTkEntry(self.frame, placeholder_text="Password will appear here",
+                                                 width=250)
+        self.password_generator_entry.grid(row=3, column=0, padx=10, pady=(10,0), sticky="w")
+
+        self.password_length_slider = CTkSlider(self.frame, from_=0, to=25, number_of_steps=25,
+                                                command=self.make_password, width=250)
+        self.password_length_slider.grid(row=4, column=0, padx=10, pady=(10,0), sticky="w")
+
+        self.password_length_entry = CTkEntry(self.frame, width=40, justify="center")
+        self.password_length_entry.grid(row=4, column=0, padx=(270,0), pady=(10,0), sticky="w")
+
+        self.password_length_slider.set(0)
+        self.password_length_entry.insert(END, "0")
+
+        self.capital_letters_onoff = StringVar(value="off")
+        self.lowercase_letters_onoff = StringVar(value="off")
+        self.numbers_onoff = StringVar(value="off")
+        self.symbols_onoff = StringVar(value="off")
+        self.capital_letters_check = CTkCheckBox(self.frame, checkbox_height=20,
+                                    variable=self.capital_letters_onoff,
+                                    checkbox_width=20, height=20, text="Capital Letters", 
+                                    offvalue="off", onvalue="on",
+                                    command=self.make_password(self.password_length_slider.get()))
+        self.capital_letters_check.grid(row=5, column=0, padx=(10,0), pady=(20,0), sticky="w")
+
+        self.lowercase_letters_check = CTkCheckBox(self.frame, checkbox_height=20,
+                                    variable=self.lowercase_letters_onoff,
+                                    checkbox_width=20, height=20, text="Lowercase Letters",
+                                    offvalue="off", onvalue="on",
+                                    command=self.make_password(self.password_length_slider.get()))
+        self.lowercase_letters_check.grid(row=5, column=0, padx=(130,0), pady=(20,0), sticky="w")
+
+        self.numbers_check = CTkCheckBox(self.frame, checkbox_height=20,
+                                    variable=self.numbers_onoff,
+                                    checkbox_width=20, height=20, text="Numbers",
+                                    offvalue="off", onvalue="on", 
+                                    command=self.make_password(self.password_length_slider.get()))
+        self.numbers_check.grid(row=5, column=0, padx=(280,0), pady=(20,0), sticky="w")
+
+        self.symbols_check = CTkCheckBox(self.frame, checkbox_height=20,
+                                    variable=self.symbols_onoff,
+                                    checkbox_width=20, height=20, text="Symbols",
+                                    offvalue="off", onvalue="on",
+                                    command=self.make_password(self.password_length_slider.get()))
+        self.symbols_check.grid(row=5, column=0, padx=(380,0), pady=(20,0), sticky="w")
+
+        self.bind_all("<Control-Shift-KeyPress-P>", lambda _: self.preferences())
+
+    def make_password(self, length):
+        self.password_length_entry.delete(0, END)
+        self.password_length_entry.insert(END, int(length))
+    
     def web_search(self):
         arg = self.web_search_entry.get()
         if arg:
@@ -286,8 +343,6 @@ class Preferences(Toplevel):
         self.geometry(c.PREFERENCES_GEOMETRY)
         if sys.platform.startswith("win"):
             self.iconbitmap(h.get_resource_path(c.WINDOW_ICON))
-        else:
-            pass
         
         self.frame = CTkScrollableFrame(self)
         self.frame.pack(fill="both", expand=True, pady=10, padx=10)
