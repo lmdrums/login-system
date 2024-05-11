@@ -464,18 +464,17 @@ class Preferences(Toplevel):
         self.focus()
         file = filedialog.askopenfile(title="Choose a profile picture",
                                       filetypes=[
-                                          ("PNG File (*.png)", "*.png"),
-                                          ("JPG File (*.jpg)", "*.jpg"),
-                                          ("TIFF File (*.tiff)", "*.tiff"),
+                                          ("Image Files", "*.png, *.jpg"),
                                           ("BMP File (*.bmp)", "*.bmp"),
+                                          ("TIFF File (*.tiff)", "*.tiff"),
                                           ("All Files (*.*)", "*.*")
                                       ])
-        
-        h.make_profile_picture(file.name, self.username)
-        s.edit_setting(*c.PROFILE_PICTURE_SETTING_LOCATOR, file.name, 
-                       h.get_user_settings_file(h.get_user_dir(self.username), self.username))
-        self.profile_pic_entry.delete(0, END)
-        self.profile_pic_entry.insert(END, file.name)
+        if file:
+            h.make_profile_picture(file.name, self.username)
+            s.edit_setting(*c.PROFILE_PICTURE_SETTING_LOCATOR, file.name, 
+                        h.get_user_settings_file(h.get_user_dir(self.username), self.username))
+            self.profile_pic_entry.delete(0, END)
+            self.profile_pic_entry.insert(END, file.name)
         self.focus()
 
     def change_account_dir(self):
