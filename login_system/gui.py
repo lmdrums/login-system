@@ -7,11 +7,10 @@ from PIL import Image, ImageTk
 from notifypy import Notify
 import pyperclip
 
-import sys, os
+import sys
 from tkinter import Toplevel, messagebox, Menu, Button
 import webbrowser
 from random import choices
-import string
 
 import login_system.helpers as h
 import login_system.constants as c
@@ -254,7 +253,7 @@ class Account(CTk):
         welcome = Notify()
         welcome.title = "Welcome!"
         welcome.message = f"Welcome {username}. Good to see you."
-        if os.path.exists(f"{self.user_directory}/{self.username}_pfp.png"):
+        if h.check_file_exists(f"{self.user_directory}/{self.username}_pfp.png"):
             welcome.icon = f"{self.user_directory}/{self.username}_pfp.png"
         else:
             welcome.icon = h.get_resource_path(c.NOTIFICATION_ICON)
@@ -369,6 +368,7 @@ class Account(CTk):
     def change_pword_length(self, length):
         self.password_length_entry.delete(0, END)
         self.password_length_entry.insert(END, int(length))
+        self.password_length_entry.configure(border_color="#979DA2")
         self.make_password()
 
     def make_password(self):
@@ -378,7 +378,10 @@ class Account(CTk):
             
     def change_password(self):
         length = self.password_length_entry.get()
-        int_length = int(length)
+        try:
+            int_length = int(length)
+        except ValueError:
+            pass
         password_choices = []
         if self.capital_letters_check.get() == "on":
             password_choices.append("caps")
@@ -389,24 +392,20 @@ class Account(CTk):
         if self.symbols_check.get() == "on":
             password_choices.append("symbols")
 
-        password_dict = {
-            "caps": string.ascii_uppercase,
-            "lower": string.ascii_lowercase,
-            "numbers": string.digits,
-            "symbols": string.punctuation
-        }
-
         val = ""
         for item in password_choices:
-            val += password_dict[item]
+            val += c.PASSWORD_DICT[item]
 
         if val != "":
-            password = "".join(choices(val, k=int_length))
-            self.password_generator_entry.configure(state="normal")
-            self.password_generator_entry.delete(0, END)
-            self.password_generator_entry.insert(END, password)
-            self.password_generator_entry.configure(state="disabled")
-            self.previous_length = int_length
+            try:
+                password = "".join(choices(val, k=int_length))
+                self.password_generator_entry.configure(state="normal")
+                self.password_generator_entry.delete(0, END)
+                self.password_generator_entry.insert(END, password)
+                self.password_generator_entry.configure(state="disabled")
+                self.previous_length = int_length
+            except UnboundLocalError:
+                pass
     
     def web_search(self):
         arg = self.web_search_entry.get()

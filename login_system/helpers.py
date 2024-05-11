@@ -143,3 +143,9 @@ def load_pfp(username: str) -> Image:
         return pfp
     else:
         return None
+    
+def check_file_exists(file: str) -> bool:
+    if os.path.exists(file):
+        return True
+    else:
+        return False

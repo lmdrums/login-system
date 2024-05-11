@@ -1,4 +1,5 @@
 import os
+import string
 from dotenv import load_dotenv
 
 # Settings
@@ -52,3 +53,9 @@ RETRY_IMAGE_PATH = os.path.join(IMAGES_FOLDER_PATH, "retry.png")
 
 # Misc
 DEFAULT_THEME = os.path.join(ASSETS_FOLDER_PATH, "theme.json")
+PASSWORD_DICT = {
+            "caps": string.ascii_uppercase,
+            "lower": string.ascii_lowercase,
+            "numbers": string.digits,
+            "symbols": string.punctuation
+        }
