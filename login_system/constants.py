@@ -45,6 +45,8 @@ SIGNIN_IMAGE_PATH = os.path.join(IMAGES_FOLDER_PATH, "signin.png")
 SIGNUP_IMAGE_PATH = os.path.join(IMAGES_FOLDER_PATH, "signup.png")
 FIND_IMAGE_PATH = os.path.join(IMAGES_FOLDER_PATH, "find.png")
 PWORD_UNMASK_IMAGE_PATH = os.path.join(IMAGES_FOLDER_PATH, "pword_unmask.png")
+COPY_IMAGE_PATH = os.path.join(IMAGES_FOLDER_PATH, "copy.png")
+RETRY_IMAGE_PATH = os.path.join(IMAGES_FOLDER_PATH, "retry.png")
 
 # Misc
 DEFAULT_THEME = os.path.join(ASSETS_FOLDER_PATH, "theme.json")

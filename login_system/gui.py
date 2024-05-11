@@ -5,10 +5,13 @@ from customtkinter import (CTk, CTkLabel, CTkEntry, CTkButton,
                            filedialog, END)
 from PIL import Image, ImageTk
 from notifypy import Notify
+import pyperclip
 
 import sys
 from tkinter import Toplevel, messagebox, Menu, Button
 import webbrowser
+from random import choices
+import string
 
 import login_system.helpers as h
 import login_system.constants as c
@@ -25,6 +28,10 @@ signup_image = CTkImage(light_image=get_pillow_image(c.SIGNUP_IMAGE_PATH),
                 dark_image=get_pillow_image(c.SIGNUP_IMAGE_PATH))
 find_image = CTkImage(light_image=get_pillow_image(c.FIND_IMAGE_PATH),
                 dark_image=get_pillow_image(c.FIND_IMAGE_PATH))
+copy_image = CTkImage(light_image=get_pillow_image(c.COPY_IMAGE_PATH),
+                dark_image=get_pillow_image(c.COPY_IMAGE_PATH), size=(17,17))
+retry_image = CTkImage(light_image=get_pillow_image(c.RETRY_IMAGE_PATH),
+                dark_image=get_pillow_image(c.RETRY_IMAGE_PATH))
 
 class DisablePasswordMask(Button):
     def __init__(self, master, entry, **kwargs):
@@ -270,17 +277,27 @@ class Account(CTk):
         self.password_generator_entry = CTkEntry(self.frame, placeholder_text="Password will appear here",
                                                  width=250)
         self.password_generator_entry.grid(row=3, column=0, padx=10, pady=(10,0), sticky="w")
+        self.password_generator_entry.configure(state="disabled")
 
-        self.password_length_slider = CTkSlider(self.frame, from_=0, to=25, number_of_steps=25,
-                                                command=self.make_password, width=250)
+        self.retry_password = CTkButton(self.frame, text="", width=28, height=26, 
+                                        image=retry_image, command=self.change_password)
+        self.retry_password.grid(row=3, column=0, pady=(10,0), padx=232, sticky="w")
+
+        self.password_copy_button = CTkButton(self.frame, text="Copy", command=self.copy_password,
+                                              image=copy_image, width=80)
+        self.password_copy_button.grid(row=3, column=0, padx=(258, 0), pady=(10,0), sticky="w")
+
+        self.password_length_slider = CTkSlider(self.frame, from_=1, to=25, number_of_steps=24,
+                                                command=self.change_pword_length, width=250)
         self.password_length_slider.grid(row=4, column=0, padx=10, pady=(10,0), sticky="w")
 
         self.password_length_entry = CTkEntry(self.frame, width=40, justify="center")
         self.password_length_entry.grid(row=4, column=0, padx=(270,0), pady=(10,0), sticky="w")
 
-        self.password_length_slider.set(0)
+        self.password_length_slider.set(1)
         self.password_length_entry.insert(END, "0")
 
+        self.previous_length = 1
         self.capital_letters_onoff = StringVar(value="off")
         self.lowercase_letters_onoff = StringVar(value="off")
         self.numbers_onoff = StringVar(value="off")
@@ -289,35 +306,78 @@ class Account(CTk):
                                     variable=self.capital_letters_onoff,
                                     checkbox_width=20, height=20, text="Capital Letters", 
                                     offvalue="off", onvalue="on",
-                                    command=self.make_password(self.password_length_slider.get()))
+                                    command=self.change_password)
         self.capital_letters_check.grid(row=5, column=0, padx=(10,0), pady=(20,0), sticky="w")
 
         self.lowercase_letters_check = CTkCheckBox(self.frame, checkbox_height=20,
                                     variable=self.lowercase_letters_onoff,
                                     checkbox_width=20, height=20, text="Lowercase Letters",
                                     offvalue="off", onvalue="on",
-                                    command=self.make_password(self.password_length_slider.get()))
+                                    command=self.change_password)
         self.lowercase_letters_check.grid(row=5, column=0, padx=(130,0), pady=(20,0), sticky="w")
 
         self.numbers_check = CTkCheckBox(self.frame, checkbox_height=20,
                                     variable=self.numbers_onoff,
                                     checkbox_width=20, height=20, text="Numbers",
                                     offvalue="off", onvalue="on", 
-                                    command=self.make_password(self.password_length_slider.get()))
+                                    command=self.change_password)
         self.numbers_check.grid(row=5, column=0, padx=(280,0), pady=(20,0), sticky="w")
 
         self.symbols_check = CTkCheckBox(self.frame, checkbox_height=20,
                                     variable=self.symbols_onoff,
                                     checkbox_width=20, height=20, text="Symbols",
                                     offvalue="off", onvalue="on",
-                                    command=self.make_password(self.password_length_slider.get()))
+                                    command=self.change_password)
         self.symbols_check.grid(row=5, column=0, padx=(380,0), pady=(20,0), sticky="w")
 
         self.bind_all("<Control-Shift-KeyPress-P>", lambda _: self.preferences())
 
-    def make_password(self, length):
+    def copy_password(self):
+        password = self.password_generator_entry.get()
+        if password:
+            pyperclip.copy(password)
+
+    def change_pword_length(self, length):
         self.password_length_entry.delete(0, END)
         self.password_length_entry.insert(END, int(length))
+        self.make_password()
+
+    def make_password(self):
+        length = self.password_length_slider.get()
+        if length != self.previous_length:
+            self.change_password()           
+            
+    def change_password(self):
+        length = self.password_length_slider.get()
+        int_length = int(length)
+        password_choices = []
+        if self.capital_letters_check.get() == "on":
+            password_choices.append("caps")
+        if self.lowercase_letters_check.get() == "on":
+            password_choices.append("lower")
+        if self.numbers_check.get() == "on":
+            password_choices.append("numbers")
+        if self.symbols_check.get() == "on":
+            password_choices.append("symbols")
+
+        password_dict = {
+            "caps": string.ascii_uppercase,
+            "lower": string.ascii_lowercase,
+            "numbers": string.digits,
+            "symbols": string.punctuation
+        }
+
+        val = ""
+        for item in password_choices:
+            val += password_dict[item]
+
+        if val != "":
+            password = "".join(choices(val, k=int_length))
+            self.password_generator_entry.configure(state="normal")
+            self.password_generator_entry.delete(0, END)
+            self.password_generator_entry.insert(END, password)
+            self.password_generator_entry.configure(state="disabled")
+            self.previous_length = int_length
     
     def web_search(self):
         arg = self.web_search_entry.get()
