@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 from notifypy import Notify
 import pyperclip
 
-import sys
+import sys, os
 from tkinter import Toplevel, messagebox, Menu, Button
 import webbrowser
 from random import choices
@@ -233,6 +233,7 @@ class Account(CTk):
         self.username = username
         self.user_directory = h.get_user_dir(self.username)
         self.settings_file_dir = h.get_user_settings_file(self.user_directory, self.username)
+
         self.title(self.username)
         self.geometry(c.ACCOUNT_GEOMETRY)
         
@@ -248,11 +249,15 @@ class Account(CTk):
 
         self.frame = CTkScrollableFrame(self)
         self.frame.pack(fill="both", expand=True, pady=20, padx=20)
+        self.frame.columnconfigure(1, weight=480)
 
         welcome = Notify()
         welcome.title = "Welcome!"
         welcome.message = f"Welcome {username}. Good to see you."
-        welcome.icon = h.get_resource_path(c.NOTIFICATION_ICON)
+        if os.path.exists(f"{self.user_directory}/{self.username}_pfp.png"):
+            welcome.icon = f"{self.user_directory}/{self.username}_pfp.png"
+        else:
+            welcome.icon = h.get_resource_path(c.NOTIFICATION_ICON)
         welcome.audio = h.get_resource_path(c.NOTIFICATION_SOUND_PATH)
 
         welcome.send()
@@ -260,6 +265,9 @@ class Account(CTk):
         self.welcome_label = CTkLabel(self.frame, font=("Segoe UI", 20, "bold"),
                                       text=f"Welcome to your account, {username}.")
         self.welcome_label.grid(row=0, column=0, padx=10, pady=(10,0), sticky="w")
+
+        self.profile_pic = CTkLabel(self.frame, text="")
+        self.profile_pic.grid(row=0, column=1, padx=10, pady=(10,0), sticky="e")
 
         self.web_search_entry = CTkEntry(self.frame, placeholder_text="Search web",
                                        width=400)
@@ -293,9 +301,10 @@ class Account(CTk):
 
         self.password_length_entry = CTkEntry(self.frame, width=40, justify="center")
         self.password_length_entry.grid(row=4, column=0, padx=(270,0), pady=(10,0), sticky="w")
+        self.password_length_entry.bind("<KeyRelease>", lambda _: self.check_int_entry())
 
         self.password_length_slider.set(1)
-        self.password_length_entry.insert(END, "0")
+        self.password_length_entry.insert(END, "1")
 
         self.previous_length = 1
         self.capital_letters_onoff = StringVar(value="off")
@@ -331,6 +340,26 @@ class Account(CTk):
         self.symbols_check.grid(row=5, column=0, padx=(380,0), pady=(20,0), sticky="w")
 
         self.bind_all("<Control-Shift-KeyPress-P>", lambda _: self.preferences())
+        self.load_pfp()
+
+    def load_pfp(self):
+        pfp = h.load_pfp(self.username)
+        if pfp:
+            resized = pfp.resize((75,75))
+            pfp_tk = ImageTk.PhotoImage(resized)
+            self.profile_pic.configure(image=pfp_tk)
+
+    def check_int_entry(self):
+        if self.password_length_entry.get():
+            try:
+                int_val = int(self.password_length_entry.get())
+                self.password_length_entry.configure(border_color="#979DA2")
+                self.password_length_slider.set(int_val)
+                self.change_password()
+            except ValueError:
+                self.password_length_entry.configure(border_color="red")
+        else:
+            self.password_length_entry.configure(border_color="red")
 
     def copy_password(self):
         password = self.password_generator_entry.get()
@@ -348,7 +377,7 @@ class Account(CTk):
             self.change_password()           
             
     def change_password(self):
-        length = self.password_length_slider.get()
+        length = self.password_length_entry.get()
         int_length = int(length)
         password_choices = []
         if self.capital_letters_check.get() == "on":
@@ -420,7 +449,34 @@ class Preferences(Toplevel):
                                         width=70, command=self.change_account_dir)
         self.account_dir_change.grid(column=2, row=1, pady=(10,0))
 
+        self.profile_pic_label = CTkLabel(self.frame, text="Profile Picture")
+        self.profile_pic_label.grid(column=0, row=2, padx=10, pady=(10,0), sticky="w")
+        self.profile_pic_entry = CTkEntry(self.frame, width=500,
+                                      placeholder_text="Account directory path (C:/...)")
+        self.profile_pic_entry.grid(column=1, row=2, pady=(10,0))
+        self.profile_pic_change = CTkButton(self.frame, text="Change  ",
+                                        width=70, command=self.change_pfp)
+        self.profile_pic_change.grid(column=2, row=2, pady=(10,0))
+
         self.load_settings()
+
+    def change_pfp(self):
+        self.focus()
+        file = filedialog.askopenfile(title="Choose a profile picture",
+                                      filetypes=[
+                                          ("PNG File (*.png)", "*.png"),
+                                          ("JPG File (*.jpg)", "*.jpg"),
+                                          ("TIFF File (*.tiff)", "*.tiff"),
+                                          ("BMP File (*.bmp)", "*.bmp"),
+                                          ("All Files (*.*)", "*.*")
+                                      ])
+        
+        h.make_profile_picture(file.name, self.username)
+        s.edit_setting(*c.PROFILE_PICTURE_SETTING_LOCATOR, file.name, 
+                       h.get_user_settings_file(h.get_user_dir(self.username), self.username))
+        self.profile_pic_entry.delete(0, END)
+        self.profile_pic_entry.insert(END, file.name)
+        self.focus()
 
     def change_account_dir(self):
         self.focus()
@@ -435,6 +491,9 @@ class Preferences(Toplevel):
         self.focus()
         self.account_directory_entry.delete(0, END)
         self.account_directory_entry.insert(END, h.get_user_dir(self.username))
+        self.profile_pic_entry.delete(0, END)
+        self.profile_pic_entry.insert(END, s.get_setting(h.get_user_settings_file(h.get_user_dir(self.username), self.username),
+                                                         *c.PROFILE_PICTURE_SETTING_LOCATOR))
         self.focus()
 
 def main():

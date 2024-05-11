@@ -1,8 +1,10 @@
 from cryptography.fernet import Fernet
+from PIL import Image, ImageOps, ImageDraw
+from dotenv import set_key
+
 import login_system.constants as c
 import login_system.settings as s
 import os, sys, shutil
-from dotenv import set_key
 
 def get_resource_path(relative_path: str="") -> str:
     """Gets absolute path to resource, works for dev and for PyInstaller"""
@@ -99,6 +101,11 @@ def move_files(username: str, src: str, dst: str) -> None:
     fernet = Fernet(c.ENCRYPTION_KEY)
     shutil.move(f"{src}/{username}.ini", f"{dst}/{username}.ini")
     shutil.move(f"{src}/{username}.txt", f"{dst}/{username}.txt")
+    if os.path.exists(f"{src}/{username}_pfp.png"):
+        shutil.move(f"{src}/{username}_pfp.png", f"{dst}/{username}_pfp.png")
+
+    s.edit_setting(*c.ACCOUNT_DIRECTORY_SETTING_LOCATOR, dst, f"{dst}/{username}.ini")
+    s.edit_setting(*c.PROFILE_PICTURE_SETTING_LOCATOR, f"{dst}/{username}_pfp.png", f"{dst}/{username}.ini")
 
     encrypted_dir = fernet.encrypt(dst.encode())
     with open(get_resource_path(c.LOGIN_DATA_PATH), "rb") as f:
@@ -114,3 +121,25 @@ def move_files(username: str, src: str, dst: str) -> None:
 
     with open(get_resource_path(c.LOGIN_DATA_PATH), "wb") as f:
         f.writelines(bytes(str(line), "utf-8") for line in lines)
+
+def make_profile_picture(file: str, username: str) -> None:
+    location = get_user_dir(username)
+
+    img = Image.open(file)
+    img = ImageOps.fit(img, (1000, 1000))
+
+    mask = Image.new('L', (1000, 1000), 0)
+
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0, 1000, 1000), fill=255)
+
+    img.putalpha(mask)
+    img.save(os.path.join(location, f"{username}_pfp.png"))
+
+def load_pfp(username: str) -> Image:
+    user_dir = get_user_dir(username)
+    if os.path.exists(f"{user_dir}/{username}_pfp.png"):
+        pfp = Image.open(f"{user_dir}/{username}_pfp.png")
+        return pfp
+    else:
+        return None
